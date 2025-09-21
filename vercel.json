@@ -3,14 +3,16 @@
   "builds": [
     { "src": "main.py", "use": "@vercel/python" },
     { "src": "api/upload.js", "use": "@vercel/node" },
-    { "src": "static/*", "use": "@vercel/static" }
+    { "src": "static/*", "use": "@vercel/static" },
+    { "src": "admin.html", "use": "@vercel/static" },
+    { "src": "index.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/static/(.*)", "dest": "/static/$1" },
     { "src": "/uploads/(.*)", "dest": "/static/uploads/$1" },
-    { "src": "/admin", "dest": "/static/admin.html", "methods": ["GET"] },
-    { "src": "/", "dest": "/static/index.html", "methods": ["GET"] },
-    { "src": "/(.*)", "dest": "/static/index.html" }
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
