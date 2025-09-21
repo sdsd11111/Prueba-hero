@@ -9,6 +9,8 @@
     { "src": "/api/upload", "dest": "/api/upload" },
     { "src": "/api/(.*)", "dest": "/main.py" },
     { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/static/index.html" }
+    { "src": "/uploads/(.*)", "dest": "/static/uploads/$1" },
+    { "src": "/(.*)", "dest": "/static/index.html" },
+    { "src": "/(.*)", "dest": "/main.py" }
   ]
 }
