@@ -525,7 +525,10 @@
 
         async function loadPlatos() {
             try {
-                const response = await fetch('/api/admin/platos');
+                const response = await fetch('/api/platos');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const platos = await response.json();
                 
                 const container = document.getElementById('platosContainer');
@@ -536,7 +539,8 @@
                     container.appendChild(platoCard);
                 });
             } catch (error) {
-                showAlert('adminAlert', 'Error cargando platos', 'error');
+                console.error('Error loading platos:', error);
+                showAlert('adminAlert', 'Error cargando platos: ' + error.message, 'error');
             }
         }
 
@@ -574,7 +578,7 @@
                     imagen_url: currentImageUrl
                 };
                 
-                const response = await fetch('/api/admin/platos', {
+                const response = await fetch('/api/platos', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -662,7 +666,7 @@
 
         async function togglePlato(id) {
             try {
-                const response = await fetch(`/api/admin/platos/${id}/toggle`, {
+                const response = await fetch(`/api/platos/${id}/toggle`, {
                     method: 'PUT'
                 });
                 
@@ -680,7 +684,7 @@
         async function deletePlato(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este plato?')) {
                 try {
-                    const response = await fetch(`/api/admin/platos/${id}`, {
+                    const response = await fetch(`/api/platos/${id}`, {
                         method: 'DELETE'
                     });
                     
