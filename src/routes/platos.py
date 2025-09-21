@@ -74,7 +74,7 @@ def get_platos():
     platos = Plato.query.filter_by(activo=True).order_by(Plato.orden.asc()).limit(3).all()
     return jsonify([plato.to_dict() for plato in platos])
 
-@platos_bp.route('/admin/platos', methods=['GET'])
+@platos_bp.route('/platos/admin', methods=['GET'])
 def get_admin_platos():
     if not session.get('admin_logged_in'):
         return jsonify({'error': 'No autorizado'}), 401
@@ -82,7 +82,7 @@ def get_admin_platos():
     platos = Plato.query.order_by(Plato.orden.asc()).all()
     return jsonify([plato.to_dict() for plato in platos])
 
-@platos_bp.route('/admin/platos', methods=['POST'])
+@platos_bp.route('/platos', methods=['POST'])
 def create_plato():
     if not session.get('admin_logged_in'):
         return jsonify({'error': 'No autorizado'}), 401
