@@ -30,12 +30,18 @@ def uploaded_file(filename):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
+    # Si la ruta comienza con /api/, manejarla con las rutas de la API
+    if path.startswith('api/'):
+        return ''  # Las rutas de la API serán manejadas por los blueprints
+        
     static_folder_path = app.static_folder
     if static_folder_path is None:
-            return "Static folder not configured", 404
+        return "Static folder not configured", 404
 
-    if path != "" and os.path.exists(os.path.join(static_folder_path, path)):
+    # Si es un archivo estático, servirlo
+    if path and os.path.exists(os.path.join(static_folder_path, path)):
         return send_from_directory(static_folder_path, path)
+    # Si no, servir index.html (para SPA)
     else:
         index_path = os.path.join(static_folder_path, 'index.html')
         if os.path.exists(index_path):
