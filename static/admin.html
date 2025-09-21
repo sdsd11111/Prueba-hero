@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - La Herencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 90%;
+            max-width: 1200px;
+            min-height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .admin-header h2 {
+            color: #333;
+            font-size: 2rem;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .platos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .plato-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 2px solid #e1e8ed;
+            transition: transform 0.2s ease;
+        }
+
+        .plato-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .plato-card.inactive {
+            opacity: 0.6;
+            background: #f1f3f4;
+        }
+
+        .plato-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .plato-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .plato-description {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .plato-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+        }
+
+        .plato-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            width: auto;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .btn-edit {
+            background: #007bff;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        .btn-toggle {
+            background: #28a745;
+        }
+
+        .btn-toggle.inactive {
+            background: #6c757d;
+        }
+
+        .add-plato-form {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px dashed #dee2e6;
+        }
+
+        .add-plato-form h3 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 1rem;
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background: #dee2e6;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .platos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ La Herencia</h1>
+            <p>Panel de Control Administrativo</p>
+        </div>
+
+        <div class="content">
+            <!-- Formulario de Login -->
+            <div id="loginForm" class="login-form">
+                <h2 style="margin-bottom: 2rem; color: #333;">Iniciar Sesión</h2>
+                <div id="loginAlert"></div>
+                <form onsubmit="login(event)">
+                    <div class="form-group">
+                        <label for="username">Usuario:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Ingresar</button>
+                </form>
+            </div>
+
+            <!-- Panel Administrativo -->
+            <div id="adminPanel" class="admin-panel">
+                <div class="admin-header">
+                    <h2>Gestión de Platos del Día</h2>
+                    <button onclick="logout()" class="btn logout-btn">Cerrar Sesión</button>
+                </div>
+
+                <div id="adminAlert"></div>
+
+                <!-- Formulario para agregar plato -->
+                <div class="add-plato-form">
+                    <h3>➕ Agregar Nuevo Plato del Día</h3>
+                    <form onsubmit="addPlato(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="titulo">Título:</label>
+                                <input type="text" id="titulo" name="titulo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="precio">Precio ($):</label>
+                                <input type="number" id="precio" name="precio" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label for="descripcion">Descripción:</label>
+                                <textarea id="descripcion" name="descripcion" rows="3" style="width: 100%; padding: 1rem; border: 2px solid #e1e8ed; border-radius: 10px; font-family: inherit; resize: vertical;" required></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Imagen:</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="imagen" name="imagen" class="file-input" accept="image/*" onchange="previewImage(this)">
+                                    <label for="imagen" class="file-input-label">
+                                        📷 Seleccionar imagen del plato
+                                    </label>
+                                </div>
+                                <img id="imagePreview" class="preview-image" style="display: none;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Agregar Plato</button>
+                    </form>
+                </div>
+
+                <!-- Lista de platos -->
+                <div id="platosContainer" class="platos-grid">
+                    <!-- Los platos se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar plato -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h3>✏️ Editar Plato</h3>
+            <form onsubmit="updatePlato(event)">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editTitulo">Título:</label>
+                    <input type="text" id="editTitulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPrecio">Precio ($):</label>
+                    <input type="number" id="editPrecio" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescripcion">Descripción:</label>
+                    <textarea id="editDescripcion" rows="3" style="width: 100%; padding: 1rem; border: 2px solid #e1e8ed; border-radius: 10px; font-family: inherit; resize: vertical;" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Nueva imagen (opcional):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="editImagen" class="file-input" accept="image/*" onchange="previewEditImage(this)">
+                        <label for="editImagen" class="file-input-label">
+                            📷 Cambiar imagen del plato
+                        </label>
+                    </div>
+                    <img id="editImagePreview" class="preview-image" style="display: none;">
+                </div>
+                <button type="submit" class="btn">Actualizar Plato</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentImageUrl = '';
+        let editImageUrl = '';
+
+        // Verificar autenticación al cargar la página
+        window.onload = function() {
+            checkAuth();
+        };
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    showAdminPanel();
+                    loadPlatos();
+                } else {
+                    showLoginForm();
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                showLoginForm();
+            }
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAdminPanel();
+                    loadPlatos();
+                } else {
+                    showAlert('loginAlert', data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('loginAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                showLoginForm();
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        async function loadPlatos() {
+            try {
+                const response = await fetch('/api/admin/platos');
+                const platos = await response.json();
+                
+                const container = document.getElementById('platosContainer');
+                container.innerHTML = '';
+                
+                platos.forEach(plato => {
+                    const platoCard = createPlatoCard(plato);
+                    container.appendChild(platoCard);
+                });
+            } catch (error) {
+                showAlert('adminAlert', 'Error cargando platos', 'error');
+            }
+        }
+
+        function createPlatoCard(plato) {
+            const card = document.createElement('div');
+            card.className = `plato-card ${!plato.activo ? 'inactive' : ''}`;
+            
+            card.innerHTML = `
+                ${plato.imagen_url ? `<img src="${plato.imagen_url}" alt="${plato.titulo}" class="plato-image">` : ''}
+                <div class="plato-title">${plato.titulo}</div>
+                <div class="plato-description">${plato.descripcion}</div>
+                <div class="plato-price">$${plato.precio}</div>
+                <div class="plato-actions">
+                    <button onclick="editPlato(${plato.id})" class="btn btn-small btn-edit">Editar</button>
+                    <button onclick="togglePlato(${plato.id})" class="btn btn-small btn-toggle ${!plato.activo ? 'inactive' : ''}">${plato.activo ? 'Desactivar' : 'Activar'}</button>
+                    <button onclick="deletePlato(${plato.id})" class="btn btn-small btn-delete">Eliminar</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        async function addPlato(event) {
+            event.preventDefault();
+            
+            const titulo = document.getElementById('titulo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const precio = document.getElementById('precio').value;
+            
+            try {
+                const platoData = {
+                    titulo,
+                    descripcion,
+                    precio,
+                    imagen_url: currentImageUrl
+                };
+                
+                const response = await fetch('/api/admin/platos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(platoData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('adminAlert', 'Plato agregado exitosamente', 'success');
+                    document.querySelector('.add-plato-form form').reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                    currentImageUrl = '';
+                    loadPlatos();
+                } else {
+                    showAlert('adminAlert', data.error || 'Error agregando plato', 'error');
+                }
+            } catch (error) {
+                showAlert('adminAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        async function editPlato(id) {
+            try {
+                const response = await fetch('/api/admin/platos');
+                const platos = await response.json();
+                const plato = platos.find(p => p.id === id);
+                
+                if (plato) {
+                    document.getElementById('editId').value = plato.id;
+                    document.getElementById('editTitulo').value = plato.titulo;
+                    document.getElementById('editDescripcion').value = plato.descripcion;
+                    document.getElementById('editPrecio').value = plato.precio;
+                    
+                    if (plato.imagen_url) {
+                        document.getElementById('editImagePreview').src = plato.imagen_url;
+                        document.getElementById('editImagePreview').style.display = 'block';
+                    }
+                    
+                    editImageUrl = plato.imagen_url;
+                    document.getElementById('editModal').style.display = 'block';
+                }
+            } catch (error) {
+                showAlert('adminAlert', 'Error cargando datos del plato', 'error');
+            }
+        }
+
+        async function updatePlato(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('editId').value;
+            const titulo = document.getElementById('editTitulo').value;
+            const descripcion = document.getElementById('editDescripcion').value;
+            const precio = document.getElementById('editPrecio').value;
+            
+            try {
+                const platoData = {
+                    titulo,
+                    descripcion,
+                    precio,
+                    imagen_url: editImageUrl
+                };
+                
+                const response = await fetch(`/api/admin/platos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(platoData)
+                });
+                
+                if (response.ok) {
+                    showAlert('adminAlert', 'Plato actualizado exitosamente', 'success');
+                    closeEditModal();
+                    loadPlatos();
+                } else {
+                    const data = await response.json();
+                    showAlert('adminAlert', data.error || 'Error actualizando plato', 'error');
+                }
+            } catch (error) {
+                showAlert('adminAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        async function togglePlato(id) {
+            try {
+                const response = await fetch(`/api/admin/platos/${id}/toggle`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    loadPlatos();
+                } else {
+                    const data = await response.json();
+                    showAlert('adminAlert', data.error || 'Error cambiando estado del plato', 'error');
+                }
+            } catch (error) {
+                showAlert('adminAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        async function deletePlato(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este plato?')) {
+                try {
+                    const response = await fetch(`/api/admin/platos/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        showAlert('adminAlert', 'Plato eliminado exitosamente', 'success');
+                        loadPlatos();
+                    } else {
+                        showAlert('adminAlert', 'Error eliminando plato', 'error');
+                    }
+                } catch (error) {
+                    showAlert('adminAlert', 'Error de conexión', 'error');
+                }
+            }
+        }
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                const response = await fetch('/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    return data.image_url;
+                } else {
+                    showAlert('adminAlert', data.error || 'Error subiendo imagen', 'error');
+                    return null;
+                }
+            } catch (error) {
+                showAlert('adminAlert', 'Error de conexión al subir imagen', 'error');
+                return null;
+            }
+        }
+
+        async function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+                
+                // Subir imagen
+                const imageUrl = await uploadImage(file);
+                if (imageUrl) {
+                    currentImageUrl = imageUrl;
+                }
+            }
+        }
+
+        async function previewEditImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const preview = document.getElementById('editImagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+                
+                // Subir imagen
+                const imageUrl = await uploadImage(file);
+                if (imageUrl) {
+                    editImageUrl = imageUrl;
+                }
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            document.getElementById('editImagePreview').style.display = 'none';
+            editImageUrl = '';
+        }
+
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Cerrar modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
+    </script>
+</body>
+</html>

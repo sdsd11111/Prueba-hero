@@ -1,0 +1,14 @@
+{
+  "name": "restaurante-la-herencia",
+  "version": "1.0.0",
+  "description": "Sitio web del restaurante La Herencia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@vercel/blob": "^0.19.3"
+  },
+  "author": "",
+  "license": "ISC"
+}

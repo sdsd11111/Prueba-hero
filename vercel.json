@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/upload.js", "use": "@vercel/node" },
+    { "src": "src/routes/platos.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/upload", "dest": "/api/upload" },
+    { "src": "/api/platos", "dest": "/src/routes/platos.py" },
+    { "src": "/(.*)", "dest": "/static/index.html" }
+  ]
+}

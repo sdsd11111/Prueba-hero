@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Herencia - Restaurante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos para el indicador de carga del slider */
+        .slider-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .slider-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #ffd700;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 0.8rem;
+        }
+        
+        .slider-loading-text {
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .platos-container {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .platos-container.loaded {
+            opacity: 1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .brand-name:hover {
+            color: #ff6b6b;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-menu li a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 1rem;
+            position: relative;
+            transition: color 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .nav-menu li a:hover {
+            color: #ff6b6b;
+        }
+
+        .nav-menu li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu li a:hover::after {
+            width: 100%;
+        }
+
+        .reserve-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .reserve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .reserve-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #2c3e50;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            padding: 2rem;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-menu a:hover {
+            color: #ff6b6b;
+        }
+
+        .close-mobile-menu {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #2c3e50;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+            color: white;
+            margin: 0;
+            padding: 6rem 1rem 2rem;
+        }
+        
+        .hero-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        .hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 400;
+            margin: 0 0 2rem 0;
+            color: #ffd700;
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        /* Scroll down arrow */
+        .scroll-down {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10;
+            animation: bounce 2s infinite;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .scroll-down:hover {
+            opacity: 1;
+            transform: translateX(-50%) translateY(5px);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+
+        /* Plato del Día */
+        .platos-del-dia {
+            text-align: center;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            max-height: calc(100vh - 200px);
+            min-height: 400px;
+        }
+        
+        .platos-container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: -100px;
+            z-index: 1;
+        }
+
+        .plato-image-container {
+            width: 100%;
+            max-width: 500px;
+            height: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            opacity: 0.95;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .plato-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease, opacity 0.3s ease;
+            opacity: 0.95;
+        }
+
+        .plato-image-container:hover img {
+            transform: scale(1.05);
+        }
+
+        .plato-content-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            padding: 0 1rem 1.5rem;
+            margin: 0 auto;
+        }
+
+        .plato-item h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .plato-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .plato-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .order-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            color: #000;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .order-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+            background: linear-gradient(135deg, #ffdf40, #ffc730);
+        }
+
+        /* Controles del Slider */
+        .slider-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            transform: translateY(-50%);
+            z-index: 10;
+            pointer-events: none;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 100%;
+        }
+
+        .slider-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 60px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 20;
+            margin: 0 10px;
+        }
+
+        .slider-btn:first-child {
+            left: 0;
+        }
+
+        .slider-btn:last-child {
+            right: 0;
+        }
+
+        .slider-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px) scale(1.1);
+        }
+
+        /* Puntos de navegación */
+        .slider-dots {
+            position: absolute;
+            bottom: 1rem;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: #ffd700;
+            transform: scale(1.2);
+        }
+
+    @media (max-width: 1200px) {
+        .hero {
+            padding: 5rem 1rem 2rem;
+        }
+        
+        .platos-container {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+            max-width: 600px;
+            min-height: auto;
+            margin-top: -100px;
+        }
+        
+        .plato-image-container {
+            max-width: 100%;
+            height: 250px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .plato-content-container {
+            text-align: center;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .plato-item h2 {
+            font-size: 1.8rem;
+        }
+        
+        .plato-description {
+            font-size: 1rem;
+            padding: 0 0.5rem;
+        }
+        
+        .plato-price {
+            font-size: 1.8rem;
+            margin: 1.2rem 0;
+        }
+        
+        .order-btn {
+            margin: 0 auto;
+            padding: 0.7rem 1.8rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 4.5rem 1rem 1.5rem;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .platos-container {
+            padding: 1.2rem;
+            min-height: 320px;
+            width: 95%;
+            margin: 1rem auto 0;
+            margin-top: -100px;
+        }
+        
+        .plato-image-container {
+            height: 220px;
+            max-width: 100%;
+            margin: 0 auto 1.2rem;
+        }
+
+        .plato-item {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            width: 100%;
+        }
+
+        .plato-item.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .plato-item h2 {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .plato-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .plato-price {
+            font-size: 1.6rem;
+            margin: 1rem 0 1.2rem;
+        }
+
+        .order-btn {
+            padding: 0.7rem 1.8rem;
+            font-size: 0.95rem;
+        }
+
+        .slider-btn {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .platos-container {
+            padding: 1.2rem;
+            min-height: 350px;
+        }
+        
+        .plato-image-container {
+            height: 220px;
+            flex: 0 0 220px;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+        }
+        
+        .hero h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .plato-item h2 {
+            font-size: 1.8rem;
+        }
+        
+        .plato-description {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .plato-price {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .order-btn {
+            padding: 0.8rem 1.8rem;
+            font-size: 0.95rem;
+        }
+        
+        .slider-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+        }
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.7);
+        animation: bounce 2s infinite;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .scroll-indicator span {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .scroll-indicator i {
+        font-size: 2rem;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+        40% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+        60% {
+            transform: translateX(-50%) translateY(-5px);
+        }
+    }
+
+    .scroll-indicator:hover {
+        color: #ffd700;
+    }
+</style>
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        .scroll-indicator:hover {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Indicador de carga -->
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando menú del día...</div>
+    </div>
+    
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav-container">
+            <div class="logo-section">
+                <div class="logo">🍽️</div>
+                <a href="#" class="brand-name">La Herencia</a>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#menu">Menú</a></li>
+                <li><a href="#nosotros">Nosotros</a></li>
+                <li><a href="#galeria">Galería y Reseñas</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+            
+            <a href="#reserva" class="reserve-btn">Reserva ¡Aquí!</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="close-mobile-menu" onclick="toggleMobileMenu()">×</button>
+        <a href="#inicio" onclick="toggleMobileMenu()">Inicio</a>
+        <a href="#menu" onclick="toggleMobileMenu()">Menú</a>
+        <a href="#nosotros" onclick="toggleMobileMenu()">Nosotros</a>
+        <a href="#galeria" onclick="toggleMobileMenu()">Galería y Reseñas</a>
+        <a href="#contacto" onclick="toggleMobileMenu()">Contacto</a>
+        <a href="#reserva" class="reserve-btn" onclick="toggleMobileMenu()">Reserva ¡Aquí!</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>La Herencia</h1>
+            <h2>Plato del día</h2>
+            <div class="scroll-down" onclick="document.querySelector('#platos-del-dia').scrollIntoView({ behavior: 'smooth' })">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            
+            <div id="platos-del-dia" class="platos-del-dia">
+                <div class="platos-container">
+                    <div id="sliderLoading" class="slider-loading">
+                        <div class="slider-loading-spinner"></div>
+                        <div class="slider-loading-text">Cargando menú del día...</div>
+                    </div>
+                    <div id="platosContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator" onclick="scrollToNext()">
+            <div style="font-size: 2rem;">↓</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem;">Desliza para explorar</div>
+        </div>
+    </section>
+
+    <script>
+        // Variables globales
+        let platos = [];
+        let currentPlatoIndex = 0;
+        let autoSlideInterval;
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Smooth scroll function
+        function scrollToNext() {
+            window.scrollTo({
+                top: window.innerHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Load platos del día
+        async function loadPlatos() {
+            const content = document.getElementById('platosContent');
+            const loadingIndicator = document.getElementById('sliderLoading');
+            
+            // Mostrar el indicador de carga
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'flex';
+                loadingIndicator.style.opacity = '1';
+            }
+            
+            // Ocultar contenido mientras carga
+            content.style.opacity = '0';
+            
+            try {
+                const response = await fetch('/api/platos');
+                if (!response.ok) {
+                    throw new Error('Error al cargar los platos');
+                }
+                
+                platos = await response.json();
+                
+                // Pequeña pausa para que se vea el indicador de carga
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Limpiar contenido existente
+                content.innerHTML = '';
+                
+                if (platos.length === 0) {
+                    displayNoPlatos();
+                } else if (platos.length === 1) {
+                    displaySinglePlato(platos[0]);
+                } else {
+                    displayMultiplePlatos();
+                    startAutoSlide();
+                }
+                
+                // Mostrar el contenido con transición
+                content.style.opacity = '1';
+                
+            } catch (error) {
+                console.error('Error loading platos:', error);
+                displayError();
+            } finally {
+                // Ocultar el indicador de carga con transición
+                if (loadingIndicator) {
+                    loadingIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingIndicator.style.display = 'none';
+                    }, 300);
+                }
+            }
+        }
+
+        function displayNoPlatos() {
+            const content = document.getElementById('platosContent');
+            content.innerHTML = `
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.8); padding: 2rem;">
+                    <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem;">
+                        🍽️ Próximamente
+                    </h2>
+                    <p style="font-size: 1.2rem;">
+                        Estamos preparando deliciosos platos del día para ti.
+                    </p>
+                </div>
+            `;
+        }
+
+        function displaySinglePlato(plato) {
+            const content = document.getElementById('platosContent');
+            
+            // Asegurarse de que la URL de la imagen sea absoluta
+            let imageUrl = plato.imagen_url || '';
+            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+                imageUrl = '/' + imageUrl;
+            }
+            
+            content.innerHTML = `
+                <div class="plato-image-container">
+                    ${imageUrl ? `
+                        <div class="plato-image-slide active">
+                            <img src="${imageUrl}" alt="${plato.titulo}" onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'; this.alt='Imagen no disponible';">
+                        </div>
+                    ` : `
+                        <div class="plato-image-slide active" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.6); font-size: 3rem;">
+                            🍽️
+                        </div>
+                    `}
+                </div>
+                <div class="plato-content-container">
+                    <div class="plato-item active">
+                        <h2>${plato.titulo}</h2>
+                        <div class="plato-description">${plato.descripcion}</div>
+                        <div class="plato-price">$${plato.precio}</div>
+                        <a href="#pedido" class="order-btn">Pide el plato del ¡Día!</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayMultiplePlatos() {
+            const content = document.getElementById('platosContent');
+            
+            // Asegurarse de que el contenedor sea visible
+            content.style.opacity = '1';
+            content.style.display = 'block';
+            
+            // Crear contenedor de imágenes
+            let imagesSlidesHTML = '';
+            platos.forEach((plato, index) => {
+                // Asegurarse de que la URL de la imagen sea absoluta
+                let imageUrl = plato.imagen_url || '';
+                if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+                    imageUrl = '/' + imageUrl;
+                }
+                
+                imagesSlidesHTML += `
+                    <div class="plato-image-slide ${index === 0 ? 'active' : ''}" style="display: ${index === 0 ? 'flex' : 'none'}; opacity: ${index === 0 ? '1' : '0'};">
+                        ${imageUrl ? `
+                            <img src="${imageUrl}" alt="${plato.titulo}" onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'; this.alt='Imagen no disponible';">
+                        ` : `
+                            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.6); font-size: 3rem;">
+                                🍽️
+                            </div>
+                        `}
+                    </div>
+                `;
+            });
+
+            // Crear contenido de platos
+            let platosHTML = '';
+            platos.forEach((plato, index) => {
+                platosHTML += `
+                    <div class="plato-item" style="display: ${index === 0 ? 'block' : 'none'}; opacity: ${index === 0 ? '1' : '0'};">
+                        <h2>${plato.titulo}</h2>
+                        <div class="plato-description">${plato.descripcion}</div>
+                        <div class="plato-price">$${plato.precio}</div>
+                        <a href="#pedido" class="order-btn">Pide el plato del ¡Día!</a>
+                    </div>
+                `;
+            });
+
+            // Crear puntos de navegación
+            const dotsHTML = platos.map((_, index) => 
+                `<span class="dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})" style="pointer-events: auto;"></span>`
+            ).join('');
+
+            content.innerHTML = `
+                <div class="plato-image-container">
+                    ${imagesSlidesHTML}
+                </div>
+                <div class="plato-content-container">
+                    <div class="platos-wrapper">
+                        ${platosHTML}
+                    </div>
+                    <div class="slider-controls">
+                        <button class="slider-btn" onclick="previousSlide()" aria-label="Plato anterior">‹</button>
+                        <div class="slider-dots">${dotsHTML}</div>
+                        <button class="slider-btn" onclick="nextSlide()" aria-label="Siguiente plato">›</button>
+                    </div>
+                </div>
+            `;
+
+            // Forzar un reflow para asegurar que las transiciones funcionen
+            void content.offsetWidth;
+            
+            // Actualizar la navegación por teclado
+            document.addEventListener('keydown', handleKeyDown);
+            
+            // Iniciar el auto-desplazamiento
+            startAutoSlide();
+            
+            // Asegurarse de que el contenedor de platos sea visible
+            document.querySelector('.platos-container').style.opacity = '1';
+        }
+
+        function displayError() {
+            const content = document.getElementById('platosContent');
+            content.innerHTML = `
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.8); padding: 2rem;">
+                    <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem;">
+                        ⚠️ Error de conexión
+                    </h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        No pudimos cargar los platos del día en este momento.
+                    </p>
+                    <button onclick="loadPlatos()" class="order-btn">Intentar de nuevo</button>
+                </div>
+            `;
+        }
+
+        function nextSlide() {
+            if (platos.length <= 1) return;
+            
+            currentPlatoIndex = (currentPlatoIndex + 1) % platos.length;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function previousSlide() {
+            if (platos.length <= 1) return;
+            
+            currentPlatoIndex = (currentPlatoIndex - 1 + platos.length) % platos.length;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function goToSlide(index) {
+            if (platos.length <= 1) return;
+            
+            currentPlatoIndex = index;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function updateSlider() {
+            const platoItems = document.querySelectorAll('.plato-item');
+            const imageSlides = document.querySelectorAll('.plato-image-slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            // Ocultar todos los elementos primero
+            platoItems.forEach((item, index) => {
+                if (index === currentPlatoIndex) {
+                    // Mostrar el elemento activo
+                    item.style.display = 'block';
+                    // Forzar un reflow para asegurar que la transición funcione
+                    void item.offsetWidth;
+                    item.style.opacity = '1';
+                    item.classList.add('active');
+                } else {
+                    // Ocultar elementos inactivos
+                    item.style.opacity = '0';
+                    item.classList.remove('active');
+                    // Retrasar el cambio de display para permitir la transición
+                    setTimeout(() => {
+                        if (index !== currentPlatoIndex) {
+                            item.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+            
+            // Actualizar las imágenes del slider
+            imageSlides.forEach((slide, index) => {
+                if (index === currentPlatoIndex) {
+                    // Mostrar la imagen activa
+                    slide.style.display = 'flex';
+                    // Forzar un reflow
+                    void slide.offsetWidth;
+                    slide.style.opacity = '1';
+                    slide.classList.add('active');
+                } else {
+                    // Ocultar imágenes inactivas
+                    slide.style.opacity = '0';
+                    slide.classList.remove('active');
+                    // Retrasar el cambio de display para permitir la transición
+                    setTimeout(() => {
+                        if (index !== currentPlatoIndex) {
+                            slide.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+            
+            // Actualizar los puntos de navegación
+            dots.forEach((dot, index) => {
+                if (index === currentPlatoIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Asegurarse de que el contenedor sea visible
+            const platosContainer = document.querySelector('.platos-container');
+            if (platosContainer) {
+                platosContainer.style.opacity = '1';
+            }
+        }
+
+        function startAutoSlide() {
+            // Detener cualquier intervalo existente
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+            }
+            
+            // Solo iniciar si hay más de un plato
+            if (platos.length > 1) {
+                autoSlideInterval = setInterval(() => {
+                    nextSlide();
+                }, 5000); // Cambiar cada 5 segundos
+            }
+        }
+
+        function resetAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+                startAutoSlide();
+            }
+        }
+
+        // Pause auto-slide when user hovers over the platos container
+        document.addEventListener('DOMContentLoaded', function() {
+            const platosContainer = document.querySelector('.platos-container');
+            if (platosContainer) {
+                platosContainer.addEventListener('mouseenter', () => {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                    }
+                });
+                
+                platosContainer.addEventListener('mouseleave', () => {
+                    if (platos.length > 1) {
+                        startAutoSlide();
+                    }
+                });
+            }
+        });
+
+        // Manejador de eventos de teclado
+        function handleKeyDown(e) {
+            if (platos.length <= 1) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    previousSlide();
+                    break;
+                case 'ArrowRight':
+                    nextSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    goToSlide(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    goToSlide(platos.length - 1);
+                    break;
+            }
+        }
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (platos.length <= 1) return;
+            
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide(); // Swipe left - next slide
+                } else {
+                    previousSlide(); // Swipe right - previous slide
+                }
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', function() {
+            loadPlatos();
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
