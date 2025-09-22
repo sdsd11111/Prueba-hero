@@ -461,8 +461,17 @@
 
         async function checkAuth() {
             try {
-                const response = await fetch('/api/check-auth');
+                console.log('Verificando autenticación...');
+                const response = await fetch('/api/check-auth', {
+                    credentials: 'include'  // Importante para enviar cookies de sesión
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('Estado de autenticación:', data);
                 
                 if (data.authenticated) {
                     showAdminPanel();
@@ -472,6 +481,7 @@
                 }
             } catch (error) {
                 console.error('Error checking auth:', error);
+                showAlert('loginAlert', 'Error al verificar la autenticación: ' + error.message, 'error');
                 showLoginForm();
             }
         }
@@ -482,8 +492,19 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
+            // Mostrar indicador de carga
+            const loginButton = document.getElementById('loginButton');
+            const originalButtonText = loginButton.innerHTML;
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+            
             try {
                 const response = await fetch('/api/login', {
+                    method: 'POST',
+                    credentials: 'include',  // Importante para recibir cookies de sesión
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -36,39 +36,6 @@ def ensure_upload_dir():
         test_file = os.path.join(upload_path, 'test_permissions.txt')
         with open(test_file, 'w') as f:
             f.write('test')
-        os.remove(test_file)
-        print("Permisos de escritura verificados correctamente")
-        
-        return upload_path
-    except Exception as e:
-        print(f"Error al verificar/crear el directorio de subidas: {str(e)}")
-        # Intentar crear el directorio en una ubicación alternativa si falla
-        alt_upload_path = os.path.abspath(os.path.join(os.getcwd(), 'temp_uploads'))
-        print(f"Intentando con ubicación alternativa: {alt_upload_path}")
-        os.makedirs(alt_upload_path, exist_ok=True)
-        return alt_upload_path
-
-@platos_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        session['admin_logged_in'] = True
-        return jsonify({'success': True, 'message': 'Login exitoso'})
-    else:
-        return jsonify({'success': False, 'message': 'Credenciales incorrectas'}), 401
-
-@platos_bp.route('/logout', methods=['POST'])
-def logout():
-    session.pop('admin_logged_in', None)
-    return jsonify({'success': True, 'message': 'Logout exitoso'})
-
-@platos_bp.route('/check-auth', methods=['GET'])
-def check_auth():
-    return jsonify({'authenticated': session.get('admin_logged_in', False)})
-
 @platos_bp.route('/platos', methods=['GET'])
 def get_platos():
     # Si no está autenticado, devolver solo los platos activos
