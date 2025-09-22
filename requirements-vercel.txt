@@ -15,4 +15,7 @@ python-multipart==0.0.5
 requests==2.31.0
 vercel==0.3.0
 serverless-http==2.7.0
-werkzeug==2.0.1
+Werkzeug==2.0.1
+gunicorn==20.1.0
+psycopg2-binary==2.9.3
+python-slugify==5.0.2

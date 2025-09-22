@@ -23,32 +23,25 @@
     },
     { 
       "src": "/", 
-      "dest": "/index.html",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      }
+      "dest": "/index.html"
     },
     { 
       "src": "/(.*)", 
-      "dest": "/index.html",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      }
+      "dest": "/index.html"
     }
   ],
   "env": {
     "PYTHONPATH": "/var/task",
     "FLASK_APP": "main.py",
     "FLASK_ENV": "production",
-    "PYTHONUNBUFFERED": "true"
+    "PYTHONUNBUFFERED": "true",
+    "FLASK_DEBUG": "0",
+    "DATABASE_URL": "sqlite:////tmp/app.db",
+    "SECRET_KEY": "tu_clave_secreta_aqui"
   },
   "build": {
     "env": {
       "PYTHON_VERSION": "3.9"
     }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  }
 }

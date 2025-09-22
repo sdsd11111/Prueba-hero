@@ -30,20 +30,35 @@ db = SQLAlchemy()
 # Configuración de la aplicación
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
+# Configuración de la base de datos
+db_path = os.path.join(os.path.dirname(__file__), 'database')
+os.makedirs(db_path, exist_ok=True)
+
 # Configuración de la aplicación
 app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', 'asdf#FGSgvasgf$5$WGT'),
     SESSION_COOKIE_NAME='prueba_hero_session',
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SECURE=True,  # Solo enviar cookies a través de HTTPS
-    SESSION_COOKIE_SAMESITE='None',  # Necesario para CORS con credenciales
+    SESSION_COOKIE_SAMESITE='Lax',  # Cambiado a 'Lax' para mejor compatibilidad
     PERMANENT_SESSION_LIFETIME=timedelta(hours=24),  # La sesión expira después de 24 horas
     SESSION_REFRESH_EACH_REQUEST=True,
-    SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}",
+    SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', f"sqlite:///{os.path.join(db_path, 'app.db')}"),
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SQLALCHEMY_ECHO=True,  # Para depuración de consultas SQL
+    SQLALCHEMY_ENGINE_OPTIONS={
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    },
     PROPAGATE_EXCEPTIONS=True
 )
+
+# Configurar logging
+app.logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
 
 # Inicializar la base de datos con la aplicación
 db.init_app(app)

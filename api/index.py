@@ -3,10 +3,17 @@ import sys
 import json
 import logging
 from io import BytesIO
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 
 # Configurar logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('api.log')
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # Asegurarse de que el directorio raíz esté en el path
@@ -17,6 +24,7 @@ logger.info(f"Python path: {sys.path}")
 # Importar la aplicación Flask después de configurar el path
 try:
     from main import app as application
+    from flask import request as flask_request
     logger.info("Aplicación Flask importada correctamente")
 except ImportError as e:
     logger.error(f"Error al importar la aplicación Flask: {e}")
@@ -47,7 +55,7 @@ def lambda_handler(event, context):
                 logger.warning(f"Error al decodificar JSON: {e}")
                 body = {}
         
-        # Crear entorno WSGI
+        # Configurar el entorno WSGI
         environ = {
             'REQUEST_METHOD': method,
             'PATH_INFO': path,
