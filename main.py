@@ -1,71 +1,96 @@
 import os
 import sys
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 # Configurar el logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
 logger = logging.getLogger(__name__)
 
-# DON'T CHANGE THIS !!!
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Asegurarse de que el directorio raíz esté en el path
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, root_path)
 logger.info(f"Python path: {sys.path}")
 
 from flask import Flask, send_from_directory, jsonify, request, session
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+
+# Inicializar la base de datos
+db = SQLAlchemy()
 
 # Configuración de la aplicación
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
-app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
-# Configurar CORS para permitir solicitudes desde cualquier origen
-CORS(app, 
-     supports_credentials=True,
-     resources={
-         r"/api/*": {
-             "origins": ["https://prueba-hero.vercel.app", "http://localhost:5000"],
-             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-             "allow_headers": ["Content-Type", "Authorization"],
-             "expose_headers": ["Content-Type", "X-CSRFToken"],
-             "supports_credentials": True
-         }
-     })
-
-# Configuración de la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = True  # Para depuración de consultas SQL
-
-# Configuración de sesión
+# Configuración de la aplicación
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', 'asdf#FGSgvasgf$5$WGT'),
+    SESSION_COOKIE_NAME='prueba_hero_session',
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=3600  # 1 hora
+    SESSION_COOKIE_SECURE=True,  # Solo enviar cookies a través de HTTPS
+    SESSION_COOKIE_SAMESITE='None',  # Necesario para CORS con credenciales
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=24),  # La sesión expira después de 24 horas
+    SESSION_REFRESH_EACH_REQUEST=True,
+    SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}",
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    SQLALCHEMY_ECHO=True,  # Para depuración de consultas SQL
+    PROPAGATE_EXCEPTIONS=True
 )
 
+# Inicializar la base de datos con la aplicación
+db.init_app(app)
+
+# Configurar CORS
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": ["https://prueba-hero.vercel.app", "http://localhost:3000", "http://localhost:5000"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+            "supports_credentials": True,
+            "expose_headers": ["Content-Type", "Set-Cookie", "Authorization"],
+            "max_age": 600
+        }
+    }
+)
+
+# Crear directorio de base de datos si no existe
+db_dir = os.path.join(os.path.dirname(__file__), 'database')
+os.makedirs(db_dir, exist_ok=True)
+
 # Importar modelos y blueprints después de configurar la aplicación
-from src.models.user import db
-from src.models.plato import Plato
+from src.models.user import db as user_db
+from src.models.plato import Plato, db as plato_db
 from src.routes.user import user_bp
 from src.routes.platos import platos_bp
 
-# Inicializar la base de datos
-db.init_app(app)
-
-# Crear tablas si no existen
-with app.app_context():
-    try:
-        db.create_all()
-        logger.info("Base de datos inicializada correctamente")
-    except Exception as e:
-        logger.error(f"Error al inicializar la base de datos: {str(e)}")
-        raise
+# Inicializar la base de datos con la aplicación
+user_db.init_app(app)
+plato_db.init_app(app)
 
 # Registrar blueprints con prefijos específicos
 app.register_blueprint(user_bp, url_prefix='/api')
-# Asegurarse de que el prefijo coincida con las rutas en el frontend
 app.register_blueprint(platos_bp, url_prefix='/api')
+
+# Crear tablas de la base de datos
+with app.app_context():
+    try:
+        # Crear todas las tablas
+        user_db.create_all()
+        plato_db.create_all()
+        logger.info("Bases de datos inicializadas correctamente")
+    except Exception as e:
+        logger.error(f"Error al inicializar las bases de datos: {e}")
+        raise
 
 # Ruta para servir archivos subidos
 @app.route('/uploads/<filename>')
