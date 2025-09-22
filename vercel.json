@@ -1,19 +1,28 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/index.py", "use": "@vercel/python" },
+    { "src": "api/*.py", "use": "@vercel/python" },
     { "src": "api/upload.js", "use": "@vercel/node" },
     { "src": "static/*", "use": "@vercel/static" },
     { "src": "admin.html", "use": "@vercel/static" },
     { "src": "index.html", "use": "@vercel/static" },
-    { "src": "main.py", "use": "@vercel/python" }
+    { "src": "main.py", "use": "@vercel/python" },
+    { "src": "src/**/*.py", "use": "@vercel/python" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api" },
     { "src": "/static/(.*)", "dest": "/static/$1" },
     { "src": "/uploads/(.*)", "dest": "/static/uploads/$1" },
-    { "src": "/admin", "dest": "/admin.html" },
-    { "src": "/", "dest": "/index.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+    { "src": "/admin", "dest": "/admin.html", "status": 200 },
+    { "src": "/", "dest": "/index.html", "status": 200 },
+    { "src": "/(.*)", "dest": "/index.html", "status": 200 }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task"
+  },
+  "build": {
+    "env": {
+      "PYTHON_VERSION": "3.9"
+    }
+  }
 }
