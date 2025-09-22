@@ -3,7 +3,8 @@ import sys
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify, request, session
+from flask_cors import CORS
 from src.models.user import db
 from src.models.plato import Plato
 from src.routes.user import user_bp
@@ -11,6 +12,16 @@ from src.routes.platos import platos_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
+
+# Configurar CORS para permitir solicitudes desde cualquier origen
+CORS(app, supports_credentials=True)
+
+# Configurar la cookie de sesión para que funcione con HTTPS
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax'
+)
 
 # Registrar blueprints con prefijos específicos
 app.register_blueprint(user_bp, url_prefix='/api')
