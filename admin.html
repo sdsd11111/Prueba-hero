@@ -463,11 +463,18 @@
             try {
                 console.log('Verificando autenticación...');
                 const response = await fetch('/api/check-auth', {
-                    credentials: 'include'  // Importante para enviar cookies de sesión
+                    method: 'GET',
+                    credentials: 'include',  // Importante para enviar cookies de sesión
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    console.error('Error en la respuesta de check-auth:', response.status, response.statusText);
+                    showLoginForm();
+                    return;
                 }
                 
                 const data = await response.json();
@@ -481,7 +488,7 @@
                 }
             } catch (error) {
                 console.error('Error checking auth:', error);
-                showAlert('loginAlert', 'Error al verificar la autenticación: ' + error.message, 'error');
+                // No mostrar el mensaje de error al usuario para no confundir
                 showLoginForm();
             }
         }
@@ -494,18 +501,18 @@
             
             // Mostrar indicador de carga
             const loginButton = document.getElementById('loginButton');
-            const originalButtonText = loginButton.innerHTML;
-            loginButton.disabled = true;
-            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+            let originalButtonText = '';
+            
+            if (loginButton) {
+                originalButtonText = loginButton.innerHTML;
+                loginButton.disabled = true;
+                loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+            }
             
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     credentials: 'include',  // Importante para recibir cookies de sesión
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
