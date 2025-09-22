@@ -525,13 +525,29 @@
 
         async function loadPlatos() {
             try {
-                const response = await fetch('/api/platos/admin');
+                // Verificar autenticación primero
+                const authCheck = await fetch('/api/check-auth');
+                const authData = await authCheck.json();
+                
+                if (!authData.authenticated) {
+                    showLoginForm();
+                    return;
+                }
+                
+                // Si está autenticado, cargar los platos
+                const response = await fetch('/api/platos');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
                 const platos = await response.json();
                 
                 const container = document.getElementById('platosContainer');
+                if (!container) {
+                    console.error('No se encontró el contenedor de platos');
+                    return;
+                }
+                
                 container.innerHTML = '';
                 
                 platos.forEach(plato => {

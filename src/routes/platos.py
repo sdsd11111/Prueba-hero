@@ -71,14 +71,12 @@ def check_auth():
 
 @platos_bp.route('/platos', methods=['GET'])
 def get_platos():
-    platos = Plato.query.filter_by(activo=True).order_by(Plato.orden.asc()).limit(3).all()
-    return jsonify([plato.to_dict() for plato in platos])
-
-@platos_bp.route('/platos/admin', methods=['GET'])
-def get_admin_platos():
+    # Si no está autenticado, devolver solo los platos activos
     if not session.get('admin_logged_in'):
-        return jsonify({'error': 'No autorizado'}), 401
+        platos = Plato.query.filter_by(activo=True).order_by(Plato.orden.asc()).limit(3).all()
+        return jsonify([plato.to_dict() for plato in platos])
     
+    # Si está autenticado, devolver todos los platos
     platos = Plato.query.order_by(Plato.orden.asc()).all()
     return jsonify([plato.to_dict() for plato in platos])
 
